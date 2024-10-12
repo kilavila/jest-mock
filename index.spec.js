@@ -24,7 +24,7 @@ describe("User", () => {
     // when getUser is called in the test
     // It allows us to control what data the function returns without making actual API calls
     getUser.mockResolvedValue(mockData);
-    const result = await getUser(0);
+    const result = await getUser(1);
 
     // Verify that the result returned by getUser matches the mock data we provided
     expect(result.id).toEqual(mockData.id);
