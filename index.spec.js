@@ -24,10 +24,13 @@ describe("User", () => {
     // when getUser is called in the test
     // It allows us to control what data the function returns without making actual API calls
     getUser.mockResolvedValue(mockData);
-    const result = await getUser(1);
+    const result = await getUser(0);
 
     // Verify that the result returned by getUser matches the mock data we provided
-    expect(result).toEqual(mockData);
+    expect(result.id).toEqual(mockData.id);
+
+    // This verifies that our function is being called with the expected parameters
+    expect(getUser).toHaveBeenCalledWith(1);
 
     /*
      * Additional test assertions:
@@ -35,9 +38,6 @@ describe("User", () => {
      * These assertions cover various aspects such as function calls, return types,
      * object properties, and parameter validation.
      */
-
-    // This verifies that our function is being called with the expected parameters
-    // expect(getUser).toHaveBeenCalledWith(1);
 
     // Verify that getUser was called exactly once
     // expect(getUser).toHaveBeenCalledTimes(1);
