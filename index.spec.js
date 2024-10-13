@@ -1,64 +1,39 @@
-import getUser from "./index.js";
+import login from "./index.js";
+import { getToken } from "./store.js";
 
-// Mock the getUser function from index.js
-// This replaces the actual implementation with a mock function
-jest.mock('./index.js', () => ({
-  // Indicate that this is an ES module
-  __esModule: true,
-  // Create a mock function as the default export
-  // This allows us to control its behavior in our tests
-  default: jest.fn()
-}));
+describe("Auth", () => {
 
-describe("User", () => {
+  it("Login", async () => {
+    const username = "johns";
+    const password = "johnspass";
 
-  it("Get by ID", async () => {
+    // Mock data representing a successful login response
     const mockData = {
       id: 1,
-      firstName: 'John',
-      lastName: 'Smith',
+      username: "johns",
+      email: "john.smith@example.com",
+      firstName: "John",
+      lastName: "Smith",
+      accessToken: "this-is-some-very-long-and-secret-access-token",
     };
 
-    // Mock the resolved value of getUser
-    // This sets up the mock function to return a Promise that resolves with mockData
-    // when getUser is called in the test
-    // It allows us to control what data the function returns without making actual API calls
-    getUser.mockResolvedValue(mockData);
-    const result = await getUser(1);
+    // Mock console.log to prevent output during tests
+    jest.spyOn(console, 'log').mockImplementation(() => {});
 
-    // Verify that the result returned by getUser matches the mock data we provided
+    // Mock the global fetch function to return our mock data
+    globalThis.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockData),
+    });
+
+    // Call the login function with our test credentials
+    const result = await login(username, password);
+    // Get the token from the store
+    const token = getToken();
+
+    // Check that the returned user ID matches the mock data
     expect(result.id).toEqual(mockData.id);
-
-    // This verifies that our function is being called with the expected parameters
-    expect(getUser).toHaveBeenCalledWith(1);
-
-    /*
-     * Additional test assertions:
-     * Uncomment the following 'expect' statements to enable more comprehensive testing.
-     * These assertions cover various aspects such as function calls, return types,
-     * object properties, and parameter validation.
-     */
-
-    // Verify that getUser was called exactly once
-    // expect(getUser).toHaveBeenCalledTimes(1);
-
-    // Check if the result is an object
-    // expect(typeof result).toBe('object');
-
-    // Verify that the result has all the expected properties
-    // expect(result).toHaveProperty('id');
-    // expect(result).toHaveProperty('firstName');
-    // expect(result).toHaveProperty('lastName');
-
-    // Check if the id is a number
-    // expect(typeof result.id).toBe('number');
-
-    // Check if firstName and lastName are strings
-    // expect(typeof result.firstName).toBe('string');
-    // expect(typeof result.lastName).toBe('string');
-
-    // Verify that the mock function was called with a number
-    // expect(getUser).toHaveBeenCalledWith(expect.any(Number));
+    // Check that the stored token matches the mock access token
+    expect(token).toEqual(mockData.accessToken);
   });
-
 });

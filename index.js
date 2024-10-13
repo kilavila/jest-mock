@@ -1,21 +1,29 @@
-const url = "https://dummyjson.com/users";
+import { saveToken } from "./store.js";
 
-/**
- * @param {number} id - The ID of the user to fetch
- * @returns {Promise<Object|undefined>} The user data if successful, undefined otherwise
- */
-async function getUser(id) {
-  const response = await fetch(`${url}/${id}`);
+const url = "https://dummyjson.com/auth/login";
+
+async function login(username, password) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: username,
+      password: password,
+      expiresInMins: 30, // optional, defaults to 60
+    }),
+    credentials: "include", // Include cookies (e.g., accessToken) in the request
+  });
 
   if (response.ok) {
     const result = await response.json();
     console.log(result);
+    saveToken(result.accessToken);
     return result;
   }
 
-  console.error('[ ERROR ] Could not get user!');
+  console.error("[ ERROR ] Could not authenticate user!");
 }
 
-export default getUser;
+export default login;
 
-await getUser(1);
+// await login("emilys", "emilyspass");
