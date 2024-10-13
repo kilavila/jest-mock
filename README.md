@@ -11,39 +11,56 @@ This project provides a simple API to fetch user data from a dummy JSON service.
 ### index.js
 
 ```js
-async function getUser(id) {
-  const response = await fetch(`${url}/${id}`);
+async function login(username, password) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: username,
+      password: password,
+      expiresInMins: 30,
+    }),
+    credentials: "include",
+  });
 
   if (response.ok) {
     const result = await response.json();
     console.log(result);
+    saveToken(result.accessToken);
     return result;
   }
 
-  console.error('[ ERROR ] Could not get user!');
+  console.error("[ ERROR ] Could not authenticate user!");
 }
 ```
 
 ### index.spec.js
 
 ```js
-jest.mock('./index.js', () => ({
-  __esModule: true,
-  default: jest.fn()
-}));
-
-describe("User", () => {
-  it("Get by ID", async () => {
+describe("Auth", () => {
+  it("Login", async () => {
+    const username = "johns";
+    const password = "johnspass";
     const mockData = {
       id: 1,
-      firstName: 'John',
-      lastName: 'Smith',
+      username: "johns",
+      email: "john.smith@example.com",
+      firstName: "John",
+      lastName: "Smith",
+      accessToken: "this-is-some-very-long-and-secret-access-token",
     };
 
-    getUser.mockResolvedValue(mockData);
-    const result = await getUser(1);
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    globalThis.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockData),
+    });
 
-    expect(result).toEqual(mockData);
+    const result = await login(username, password);
+    const token = getToken();
+
+    expect(result.id).toEqual(mockData.id);
+    expect(token).toEqual(mockData.accessToken);
   });
 });
 ```
